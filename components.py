@@ -161,14 +161,19 @@ def render_copyable_html(html_content: str, button_label: str = "Copy to Clipboa
     """
     Render HTML content with a copy button that copies rich HTML to clipboard.
     Jira/Confluence will preserve bold, links, and line breaks on paste.
+    Content is rendered via st.markdown (links are clickable); the copy button
+    is a separate stc.html iframe with the HTML embedded directly (no cross-frame access).
     """
     global _COPY_BUTTON_ID
     _COPY_BUTTON_ID += 1
     container_id = f"copyable-{_COPY_BUTTON_ID}"
 
-    st.markdown(f"""<div id="{container_id}" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    import base64 as _b64
+    _encoded_html = _b64.b64encode(html_content.encode()).decode()
+
+    st.markdown(f"""<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
          font-size: 14px; line-height: 1.8; border: 1px solid #3a4560; border-radius: 8px;
-         padding: 16px; background: #0d1225; color: #e2e8f0; margin-bottom: 12px;">
+         padding: 16px; background: #0d1225; color: #e2e8f0; margin-bottom: 4px;">
         {html_content}
     </div>""", unsafe_allow_html=True)
 
@@ -183,11 +188,12 @@ def render_copyable_html(html_content: str, button_label: str = "Copy to Clipboa
 </button>
 <script>
 function copyContent_{_COPY_BUTTON_ID}() {{
-    const el = window.parent.document.getElementById("{container_id}");
-    if (!el) return;
-    const html = el.innerHTML;
-    const blob = new Blob([html], {{type: "text/html"}});
-    const plainBlob = new Blob([el.innerText], {{type: "text/plain"}});
+    const raw = atob("{_encoded_html}");
+    const tmp = document.createElement("div");
+    tmp.innerHTML = raw;
+    const plain = tmp.innerText;
+    const blob = new Blob([raw], {{type: "text/html"}});
+    const plainBlob = new Blob([plain], {{type: "text/plain"}});
     const item = new ClipboardItem({{"text/html": blob, "text/plain": plainBlob}});
     navigator.clipboard.write([item]).then(() => {{
         const btn = document.getElementById("btn-{container_id}");

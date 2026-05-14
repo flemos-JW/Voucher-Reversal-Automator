@@ -345,9 +345,11 @@ def render_auth_screen(app_name: str, password: str, accent_color: str = "#00e5f
 
     col_l, col_m, col_r = st.columns([1, 2, 1])
     with col_m:
-        pwd = st.text_input("Password", type="password", label_visibility="collapsed",
-                            placeholder="Enter password...")
-        if st.button("Sign In", type="primary", use_container_width=True):
+        with st.form("auth_form", clear_on_submit=False):
+            pwd = st.text_input("Password", type="password", label_visibility="collapsed",
+                                placeholder="Enter password...")
+            submitted = st.form_submit_button("Sign In", type="primary", use_container_width=True)
+        if submitted:
             if pwd == password:
                 st.session_state.authenticated = True
                 st.rerun()

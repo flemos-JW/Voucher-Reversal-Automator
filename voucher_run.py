@@ -366,9 +366,10 @@ def reverse_voucher(page, mid: str, voucher_id: str, settlement_date: str, adj_c
 # ---------------------------------------------------------------------------
 def main():
     raw = sys.argv[1:]
-    dry_run = "--dry-run" in raw
-    headed  = "--headed"  in raw or True
-    args    = [a for a in raw if not a.startswith("--")]
+    dry_run  = "--dry-run"  in raw
+    no_pause = "--no-pause" in raw
+    headed   = "--headed"   in raw or True
+    args     = [a for a in raw if not a.startswith("--")]
 
     vouchers_path = Path(args[0]).expanduser() if args else SCRIPT_DIR / "vouchers.csv"
     vouchers      = load_vouchers(vouchers_path)
@@ -390,8 +391,11 @@ def main():
         page = context.pages[0] if context.pages else context.new_page()
 
         page.goto(START_URL, wait_until="domcontentloaded")
-        print("\nIf you're not already logged in, log in now in the Chromium window.")
-        input("Press Enter here when you're ready to start...")
+        if no_pause:
+            page.wait_for_timeout(3000)
+        else:
+            print("\nIf you're not already logged in, log in now in the Chromium window.")
+            input("Press Enter here when you're ready to start...")
 
         out_path    = SCRIPT_DIR / "results.csv"
         failed_path = SCRIPT_DIR / "failed_vouchers.csv"

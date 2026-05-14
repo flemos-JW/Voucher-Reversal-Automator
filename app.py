@@ -223,7 +223,7 @@ st.markdown("""
 
 st.caption("If Okta login is required, use the terminal command above instead.")
 if st.button("Run Now", type="primary", use_container_width=True, key="vr_run_now"):
-    _cmd = ["python3", str(RUN_SCRIPT)]
+    _cmd = ["python3", str(RUN_SCRIPT), "--no-pause"]
     with st.spinner("Running voucher reversal automation..."):
         _proc = subprocess.run(_cmd, capture_output=True, text=True, timeout=600, cwd=str(SCRIPT_DIR))
     if _proc.returncode == 0:
@@ -302,7 +302,7 @@ else:
                 st.caption("Tip: a succeeded retry overwrites its row in results.csv.")
                 if st.button("Retry Now", type="primary", key="vr_retry_btn"):
                     FAILED_PATH.write_text(edited_csv)
-                    _retry_cmd = ["python3", str(RUN_SCRIPT), str(FAILED_PATH)]
+                    _retry_cmd = ["python3", str(RUN_SCRIPT), str(FAILED_PATH), "--no-pause"]
                     with st.spinner(f"Retrying {len(failed_rows)} row(s)..."):
                         _rproc = subprocess.run(_retry_cmd, capture_output=True, text=True, timeout=600, cwd=str(SCRIPT_DIR))
                     if _rproc.returncode == 0:
